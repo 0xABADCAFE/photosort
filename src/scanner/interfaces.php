@@ -4,8 +4,8 @@ namespace PhotoSort\Scanner;
 
 /**
  * IDirectoryVisitor
- * 
- * Costomisable behaviour for entering and leaving directories.
+ *
+ * Customisable behaviour for entering and leaving directories.
  */
 interface IDirectoryVisitor {
   /**
@@ -14,7 +14,7 @@ interface IDirectoryVisitor {
    * @param string $sDirName  The full path to the directory containing the file.
    */
   public function visitDirectory(string $sDirName);
-  
+
   /**
    * Leaves the most recently entered Directory.
    */
@@ -25,6 +25,7 @@ interface IDirectoryVisitor {
 /**
  * IFileVisitor
  *
+ * Invoked for each (image) file encountered.
  */
 interface IFileVisitor {
   /**
@@ -39,17 +40,19 @@ interface IFileVisitor {
 /**
  * IDirectoryScanner
  *
+ * Scans a directory, invoking any registered IFileVisitor for each file within and any
+ * regustered IDirectoryVisitor on entry and exit of the directory.
  */
 interface IScanner {
   /**
-   * Attach a FileVisitor that will be called for every file this Scanner cares about.
-   * @param FileVisitor $oVisitor
-   */ 
+   * Attach an IFileVisitor that will be called for every file this Scanner cares about.
+   * @param IFileVisitor $oVisitor
+   */
   public function addFileVisitor(IFileVisitor $oVisitor);
 
   /**
-   * Attach a Directory that will be called for every directory this Scanner scans.
-   * @param FileVisitor $oVisitor
+   * Attach an IDirectoryVisitor that will be called for every directory this Scanner scans.
+   * @param IDirectoryVisitor $oVisitor
    */
   public function addDirectoryVisitor(IDirectoryVisitor $oVisitor);
 
