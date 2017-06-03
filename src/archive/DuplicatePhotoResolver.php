@@ -18,14 +18,17 @@ class DuplicatePhotoResolver implements \PhotoSort\Utility\IDuplicateResolver {
       "\t4) Index A, Delete B\n",
       "\t5) Index B, Delete A\n";
 
+    $sExistingFile = $sEPath . '/' . $oExisting->n;
+    $sCurrentFile  = $sCPath . '/' . $oCurrent->n;
+
     while(true) {
-      $iOption = $this->promptOption(0, 4);
+      $iOption = $this->promptOption(0, 5);
       switch ($iOption) {
         case 0:
-          shell_exec('gopen ' . escapeshellarg($sEPath) . ' &');
+          shell_exec('gopen ' . escapeshellarg($sExistingFile) . ' &');
           break;
         case 1:
-          shell_exec('gopen ' . escapeshellarg($sCPath) . ' &');
+          shell_exec('gopen ' . escapeshellarg($sCurrentFile) . ' &');
           break;
         case 2:
           return $oExisting;
