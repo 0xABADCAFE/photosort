@@ -1,0 +1,4 @@
+.kdev*
+data/*.index
+profiling.php
+xhprof
