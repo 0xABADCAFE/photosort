@@ -8,25 +8,36 @@ class DuplicatePhotoResolver implements \PhotoSort\Utility\IDuplicateResolver {
       "Duplicate image found when indexing archive:\n",
       "\tA:", $this->formatRecord($oExisting, $sEPath), "\n",
       "\tB:", $this->formatRecord($oCurrent, $sCPath), "\n";
- 
+
     echo
       "Please choose a resolution option:\n",
-      "\t1) Index A, Ignore B\n",
-      "\t2) Index B, Ignore A\n",
-      "\t3) Index A, Delete B\n",
-      "\t4) Index B, Delete A\n";
-      
-    $iOption = $this->promptOption(1, 4);
-    
-    switch ($iOption) {
-      case 1:
-        return $oExisting;
-      case 2:
-        return $oCurrent;
-      case 3:
-        return $oExisting;
-      case 4:
-        return $oCurrent;
+      "\t0) Display A\n",
+      "\t1) Display B\n",
+      "\t2) Index A, Ignore B\n",
+      "\t3) Index B, Ignore A\n",
+      "\t4) Index A, Delete B\n",
+      "\t5) Index B, Delete A\n";
+
+    while(true) {
+      $iOption = $this->promptOption(0, 4);
+      switch ($iOption) {
+        case 0:
+          shell_exec('gopen ' . escapeshellarg($sEPath) . ' &');
+          break;
+        case 1:
+          shell_exec('gopen ' . escapeshellarg($sCPath) . ' &');
+          break;
+        case 2:
+          return $oExisting;
+        case 3:
+          return $oCurrent;
+        case 4:
+          return $oExisting;
+        case 5:
+          return $oCurrent;
+        default:
+          break;
+      }
     }
   }
 
@@ -39,7 +50,7 @@ class DuplicatePhotoResolver implements \PhotoSort\Utility\IDuplicateResolver {
       ", " . $oRecord->m->s .
       " bytes";
   }
-  
+
   private function promptOption($iFirst, $iLast) {
     $iOption = 0;
     do {
