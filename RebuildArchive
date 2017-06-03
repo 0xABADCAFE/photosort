@@ -6,7 +6,7 @@
  * @package PhotoSort
  */
 
-require_once 'profiling.php'; 
+//require_once 'profiling.php';
 
 if (!isset($_SERVER['argv'][1])) {
   echo "usage RebuildArchive <path to archive>\n";
@@ -23,7 +23,7 @@ if (
   exit();
 }
 
-require_once 'src/archive/interfaces.php'; 
+require_once 'src/archive/interfaces.php';
 require_once 'src/scanner/interfaces.php';
 require_once 'src/utility/interfaces.php';
 require_once 'src/archive/Indexer.php';
@@ -51,4 +51,4 @@ $oDirectoryScanner
 // Save the index
 $oIndexer
   ->showStats()
-  ->writeIndex("archive.index");
+  ->writeIndex("data/archive.index");

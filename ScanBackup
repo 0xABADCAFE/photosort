@@ -11,7 +11,7 @@
  * @package PhotoSort
  */
 
-require_once 'profiling.php'; 
+//require_once 'profiling.php';
 
 if (!isset($_SERVER['argv'][1])) {
   echo "usage ScanBackup <path to backup>\n";
@@ -28,7 +28,7 @@ if (
   exit();
 }
 
-require_once 'src/archive/interfaces.php'; 
+require_once 'src/archive/interfaces.php';
 require_once 'src/scanner/interfaces.php';
 require_once 'src/utility/interfaces.php';
 require_once 'src/archive/ImageMetaHasher.php';
@@ -60,11 +60,11 @@ class PrototypeIndexedDeduplicator implements \PhotoSort\Scanner\IScannedDataCon
     }
     $this->debug();
   }
-  
+
   public function debug() {
     echo "Duplicates found: ", $this->iDuplicates, ", New Images: ", $this->iNewImages, "\n";
   }
-  
+
   private function trash(string $sDirectory, $sImage) {
     $sDupeDir = $sDirectory . "/" . self::DUPEDIR_NAME;
     if (!file_exists($sDupeDir)) {
@@ -76,8 +76,8 @@ class PrototypeIndexedDeduplicator implements \PhotoSort\Scanner\IScannedDataCon
     }
     rename($sDirectory . "/" . $sImage, $sDupeDir . "/" . $sImage);
   }
-  
-  private 
+
+  private
     $oIndex       = null,
     $oHasher      = null,
     $iDuplicates  = 0,
@@ -91,7 +91,7 @@ class PrototypeIndexedDeduplicator implements \PhotoSort\Scanner\IScannedDataCon
 $oVisitor = new \PhotoSort\Scanner\Visitor(
   new PrototypeIndexedDeduplicator(
     new \PhotoSort\Archive\ImageMetaHasher(),
-    'archive.index'
+    'data/archive.index'
   )
 );
 
