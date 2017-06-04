@@ -1,11 +1,10 @@
 <?php
+/**
+ * @package PhotoSort
+ */
 
 namespace PhotoSort\Utility;
 
-/**
- * CLIScript
- *
- */
 abstract class CLIScript {
   const
     /**
@@ -34,12 +33,12 @@ abstract class CLIScript {
    * @param enum   $eParamType
    * @param enum   $eParamReqt
    */
-  protected function expectParam(string $sParamName, $eParamType, $eParamReqt) {
+  protected function expectParam(string $sParamName, int $eParamType, int $eParamReqt) {
     if (!isset(self::$aAllowedTypes[$eParamType])) {
       throw new \InvalidArgumentException();
     }
     $this->aExpectParams[$sParamName] = (object)[
-      'eParamType'    => $eParamType,
+      'eParamType' => $eParamType,
       'eParamReqt' => $eParamReqt
     ];
   }
@@ -90,7 +89,7 @@ abstract class CLIScript {
           $oParamInfo->eParamReqt & self::PARAM_REQUIRED &&
           false == $oParamState->bParamProvided
         ) {
-          throw new \Exception('Missing required paramter ' . $sParamName);
+          throw new \Exception('Missing required paramter --' . $sParamName);
         }
         if ($oParamState->bParamProvided) {
           if ($oParamInfo->eParamReqt & self::PARAM_VALUE_REQUIRED) {
@@ -120,12 +119,12 @@ abstract class CLIScript {
     switch ($eParamType) {
       case self::PARAM_TYPE_INTEGER:
         if (!is_numeric($sValue)) {
-          throw new \Exception('Value for ' . $sParamNname . ' must be ' . self::$aAllowedTypes[$eParamType]);
+          throw new \Exception('Value for --' . $sParamNname . ' must be ' . self::$aAllowedTypes[$eParamType]);
         }
         return (int)$sValue;
       case self::PARAM_TYPE_FLOAT:
         if (!is_numeric($sValue)) {
-          throw new \Exception('Value for ' . $sParamNname . ' must be ' . self::$aAllowedTypes[$eParamType]);
+          throw new \Exception('Value for --' . $sParamNname . ' must be ' . self::$aAllowedTypes[$eParamType]);
         }
         return (float)$sValue;
       default:

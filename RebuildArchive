@@ -8,47 +8,74 @@
 
 //require_once 'profiling.php';
 
-if (!isset($_SERVER['argv'][1])) {
-  echo "usage RebuildArchive <path to archive>\n";
-  exit();
+require_once 'src/utility/CLIScript.php';
+
+class RebuildArchive extends \PhotoSort\Utility\CLIScript {
+
+  public function __construct() {
+    $this->expectParam('path', self::PARAM_TYPE_STRING, self::PARAM_REQUIRED|self::PARAM_VALUE_REQUIRED);
+    $this->expectParam('index', self::PARAM_TYPE_STRING, self::PARAM_OPTIONAL|self::PARAM_VALUE_REQUIRED);
+  }
+
+  public function main() {
+    $aParams     = $this->getParams();
+    $oPathParam  = $aParams['path'];
+    $oIndexParam = $aParams['index'];
+    $this->validatePath($oPathParam->mValue);
+    $this->loadDependencies();
+
+    // Create the Indexer
+    $oIndexer = new \PhotoSort\Archive\Indexer(
+      new \PhotoSort\Archive\DuplicatePhotoResolver(),
+      new \PhotoSort\Archive\ImageMetaHasher()
+    );
+
+    // Create the Visitor
+    $oVisitor = new \PhotoSort\Scanner\Visitor($oIndexer);
+
+    // Create the Scanner and Go!
+    $oDirectoryScanner = new \PhotoSort\Scanner\RecursiveDirectoryScanner();
+    $oDirectoryScanner
+      ->addDirectoryVisitor($oVisitor)
+      ->addFileVisitor($oVisitor)
+      ->scan($oPathParam->mValue);
+
+    $sIndexPath = $oIndexParam->bParamProvided ? $oIndexParam->mValue : 'data/archive.index';
+
+    // Save the index
+    $oIndexer
+      ->showStats()
+      ->writeIndex($sIndexPath);
+  }
+
+  private function validatePath(string $sPath) {
+    if (
+      !file_exists($sPath) ||
+      !is_dir($sPath) ||
+      !is_readable($sPath)
+    ) {
+      throw new Exception("Unable to read $sPath for indexing");
+    }
+  }
+
+  private function loadDependencies() {
+    require_once 'src/archive/interfaces.php';
+    require_once 'src/scanner/interfaces.php';
+    require_once 'src/utility/interfaces.php';
+    require_once 'src/archive/Indexer.php';
+    require_once 'src/archive/ImageMetaHasher.php';
+    require_once 'src/archive/DuplicatePhotoResolver.php';
+    require_once 'src/scanner/Visitor.php';
+    require_once 'src/scanner/RecursiveDirectoryScanner.php';
+  }
 }
 
-$sPath = trim($_SERVER['argv'][1]);
-if (
-  !file_exists($sPath) ||
-  !is_dir($sPath) ||
-  !is_readable($sPath)
-) {
-  echo "Unable to read $sPath for indexing\n";
-  exit();
+try {
+  $oScript = new RebuildArchive();
+  $oScript->main();
+} catch (Exception $oErr) {
+  echo $oErr->getMessage(), "\n";
 }
+exit();
 
-require_once 'src/archive/interfaces.php';
-require_once 'src/scanner/interfaces.php';
-require_once 'src/utility/interfaces.php';
-require_once 'src/archive/Indexer.php';
-require_once 'src/archive/ImageMetaHasher.php';
-require_once 'src/archive/DuplicatePhotoResolver.php';
-require_once 'src/scanner/Visitor.php';
-require_once 'src/scanner/RecursiveDirectoryScanner.php';
 
-// Create the Indexer
-$oIndexer = new \PhotoSort\Archive\Indexer(
-  new \PhotoSort\Archive\DuplicatePhotoResolver(),
-  new \PhotoSort\Archive\ImageMetaHasher()
-);
-
-// Create the Visitor
-$oVisitor = new \PhotoSort\Scanner\Visitor($oIndexer);
-
-// Create the Scanner and Go!
-$oDirectoryScanner = new \PhotoSort\Scanner\RecursiveDirectoryScanner();
-$oDirectoryScanner
-  ->addDirectoryVisitor($oVisitor)
-  ->addFileVisitor($oVisitor)
-  ->scan($sPath);
-
-// Save the index
-$oIndexer
-  ->showStats()
-  ->writeIndex("data/archive.index");
