@@ -1,0 +1,32 @@
+#! /usr/bin/php
+<?php
+/**
+ * ScanBackup
+ *
+ * @package PhotoSort
+ */
+/**
+ * PhotoSort
+ *
+ * @package PhotoSort
+ */
+
+//require_once 'profiling.php';
+
+require_once 'src/utility/CLIScript.php';
+
+class TestScript extends \PhotoSort\Utility\CLIScript {
+
+  public function __construct() {
+    $this->expectArg('reqint', self::ARGTYPE_INTEGER, self::ARG_REQUIRED|self::ARG_VALUE_REQUIRED);
+    $this->expectArg('optstr', self::ARGTYPE_STRING, self::ARG_OPTIONAL|self::ARG_VALUE_OPTIONAL);
+    $this->expectArg('switch', self::ARGTYPE_SWITCH, self::ARG_OPTIONAL);
+  }
+
+  public function main() {
+    print_r($this->getArgs());
+  }
+}
+
+$oScript = new TestScript();
+$oScript->main();
