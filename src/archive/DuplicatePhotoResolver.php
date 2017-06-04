@@ -1,42 +1,48 @@
 <?php
+/**
+ * @package PhotoSort
+ */
 
 namespace PhotoSort\Archive;
 
 class DuplicatePhotoResolver implements \PhotoSort\Utility\IDuplicateResolver {
-  public function resolve($oExisting, $sEPath, $oCurrent, $sCPath) {
+  public function resolve($oExisting, string $sEPath, $oCurrent, string $sCPath) {
     echo
       "Duplicate image found when indexing archive:\n",
       "\tA:", $this->formatRecord($oExisting, $sEPath), "\n",
       "\tB:", $this->formatRecord($oCurrent, $sCPath), "\n";
 
-    echo
-      "Please choose a resolution option:\n",
-      "\t0) Display A\n",
-      "\t1) Display B\n",
-      "\t2) Index A, Ignore B\n",
-      "\t3) Index B, Ignore A\n",
-      "\t4) Index A, Delete B\n",
-      "\t5) Index B, Delete A\n";
+    $aOptions = [
+      'A' => 'Display A',
+      'B' => 'Display B',
+      '1' => 'Index A, Ignore B',
+      '2' => 'Index B, Ignore A',
+      '3' => 'Index A, Delete B',
+      '4' => 'Index B, Delete A',
+    ];
 
     $sExistingFile = $sEPath . '/' . $oExisting->n;
     $sCurrentFile  = $sCPath . '/' . $oCurrent->n;
 
     while(true) {
-      $iOption = $this->promptOption(0, 5);
-      switch ($iOption) {
-        case 0:
+      $sSelected = $this->promptOption(
+        "Please choose a resolution option:",
+        $aOptions
+      );
+      switch ($sSelected) {
+        case 'A':
           shell_exec('gopen ' . escapeshellarg($sExistingFile) . ' &');
           break;
-        case 1:
+        case 'B':
           shell_exec('gopen ' . escapeshellarg($sCurrentFile) . ' &');
           break;
-        case 2:
+        case '1':
           return $oExisting;
-        case 3:
+        case '2':
           return $oCurrent;
-        case 4:
+        case '3':
           return $oExisting;
-        case 5:
+        case '4':
           return $oCurrent;
         default:
           break;
@@ -44,9 +50,8 @@ class DuplicatePhotoResolver implements \PhotoSort\Utility\IDuplicateResolver {
     }
   }
 
-  private function formatRecord($oRecord, $sPath) {
-    return   $sPath .
-      "/"  . $oRecord->n .
+  private function formatRecord($oRecord, string $sPath) {
+    return   $sPath . $oRecord->n .
       ", " . date('d/m/Y H:i:s', $oRecord->m->t) .
       ", " . $oRecord->m->w .
       "x"  . $oRecord->m->h .
@@ -54,12 +59,18 @@ class DuplicatePhotoResolver implements \PhotoSort\Utility\IDuplicateResolver {
       " bytes";
   }
 
-  private function promptOption($iFirst, $iLast) {
-    $iOption = 0;
+  private function promptOption(string $sMessage, array $aOptions) {
+    $sSelected = null;
+    $iAttempts = 0;
     do {
-      echo "\nChoose ", $iFirst, "...", $iLast, ": ",
-      $iOption = (int)trim(fgets(STDIN), "\n");
-    } while ($iOption < $iFirst || $iOption > $iLast);
-    return $iOption;
+      echo $sMessage, "\n";
+      if (0 == ($iAttempts++ % 10)) {
+        foreach ($aOptions as $sOption => $sDescription) {
+          echo "\t", $sOption, ") ", $sDescription, "\n";
+        }
+      }
+      $sSelected = strtoupper(trim(fgets(STDIN), "\n"));
+    } while (!isset($aOptions[$sSelected]));
+    return $sSelected;
   }
 }
