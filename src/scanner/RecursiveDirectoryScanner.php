@@ -1,4 +1,7 @@
 <?php
+/**
+ * @package PhotoSort
+ */
 
 namespace PhotoSort\Scanner;
 
@@ -9,14 +12,14 @@ namespace PhotoSort\Scanner;
 class RecursiveDirectoryScanner implements IScanner {
 
   public function __construct() {
-    
+
   }
-  
+
   public function addDirectoryExclusion(string $sDirExclusion) {
     $this->kDirExclusions[$sDirExclusion] = 1;
     return $this;
   }
-  
+
   public function addFileVisitor(IFileVisitor $oVisitor) {
     $this->aFileVisitors[] = $oVisitor;
     return $this;
@@ -26,11 +29,11 @@ class RecursiveDirectoryScanner implements IScanner {
     $this->aDirVisitors[] = $oVisitor;
     return $this;
   }
-  
+
   public function scan(string $sDirectory) {
     $this->enter($sDirectory);
   }
-  
+
   private function enter(string $sDirectory) {
     foreach ($this->aDirVisitors as $oVisitor) {
       $oVisitor->visitDirectory($sDirectory);
@@ -42,7 +45,7 @@ class RecursiveDirectoryScanner implements IScanner {
       if (isset($this->kDirExclusions[$sItem])) {
         continue;
       }
-      $sFullPath = $sDirectory . '/' . $sItem;      
+      $sFullPath = $sDirectory . '/' . $sItem;
       if (is_link($sFullPath)) {
         continue;
       }
@@ -50,7 +53,7 @@ class RecursiveDirectoryScanner implements IScanner {
         $kSubdirs[$sFullPath] = 1;
         continue;
       }
-      
+
       foreach ($this->aFileVisitors as $oVisitor) {
         $oVisitor->visitFile($sDirectory, $sItem);
       }

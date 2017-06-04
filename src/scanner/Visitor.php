@@ -1,4 +1,7 @@
 <?php
+/**
+ * @package PhotoSort
+ */
 
 namespace PhotoSort\Scanner;
 
@@ -8,7 +11,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
     $this->oDataConsumer = $oDataConsumer;
   }
 
-  public function visitDirectory(string $sDirName) {   
+  public function visitDirectory(string $sDirName) {
     $this->sCurrentDir    = $sDirName;
     $this->aFilesExamined = [];
   }
@@ -21,9 +24,9 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
       $this->oDataConsumer->consume($this->sCurrentDir, $this->aFilesExamined);
     }
   }
-  
+
   public function visitFile(string $sDirName, string $sFileName) {
-    
+
     $sFullPath  = $sDirName . '/'.  $sFileName;
     $aExpected  = $this->getExpectedTypes($sFileName);
     $iExifType  = exif_imagetype($sFullPath);
@@ -31,7 +34,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
     if (!isset($aExpected[$iExifType])) {
       return;
     }
-    
+
     $aExif = @exif_read_data($sFullPath, 'ANY_TAG', true, false);
     if (false !== $aExif) {
       $this->aFilesExamined[$sFileName] = $this->reduceExif($aExif);
@@ -39,7 +42,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
       echo "\tCouldn't extract EXIF data from $sFullPath...\n";
     }
   }
-  
+
   private function reduceExif(array $aExif) {
 /*
     [FILE] => Array
@@ -60,7 +63,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
             [IsColor] => 1
             [ByteOrderMotorola] => 1
             [ApertureFNumber] => f/2.8
-            [UserComment] =>  
+            [UserComment] =>
             [UserCommentEncoding] => ASCII
             [Thumbnail.FileType] => 2
             [Thumbnail.MimeType] => image/jpeg
@@ -110,7 +113,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
             [ExifVersion] => 0230
             [DateTimeOriginal] => 2013:08:29 16:42:48
             [DateTimeDigitized] => 2013:08:29 16:42:48
-            [ComponentsConfiguration] => 
+            [ComponentsConfiguration] =>
             [CompressedBitsPerPixel] => 4/1
             [ShutterSpeedValue] => 6965784/1000000
             [ApertureValue] => 2970854/1000000
@@ -120,7 +123,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
             [LightSource] => 0
             [Flash] => 16
             [FocalLength] => 520/10
-            [UserComment] => ASCII 
+            [UserComment] => ASCII
             [SubSecTime] => 20
             [SubSecTimeOriginal] => 20
             [SubSecTimeDigitized] => 20
@@ -130,9 +133,9 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
             [ExifImageLength] => 5520
             [InteroperabilityOffset] => 984
             [SensingMethod] => 2
-            [FileSource] => 
-            [SceneType] => 
-            [CFAPattern] => 
+            [FileSource] =>
+            [SceneType] =>
+            [CFAPattern] =>
             [CustomRendered] => 0
             [ExposureMode] => 0
             [WhiteBalance] => 0
@@ -147,7 +150,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
         )
     [GPS] => Array
         (
-            [GPSVersion] => 
+            [GPSVersion] =>
         )
 
     [INTEROP] => Array
@@ -171,7 +174,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
     }
     return $oResult;
   }
-  
+
   private function getExpectedTypes(string $sFileName) {
     $aResult = [];
     $iDot = strrpos($sFileName, '.');
@@ -183,7 +186,7 @@ class Visitor implements IFileVisitor, IDirectoryVisitor {
     }
     return $aResult;
   }
-  
+
   private $sCurrentDir  = null;
 
   private $aExtensions = [

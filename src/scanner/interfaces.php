@@ -1,4 +1,7 @@
 <?php
+/**
+ * @package PhotoSort
+ */
 
 namespace PhotoSort\Scanner;
 
@@ -67,6 +70,3 @@ interface IScannedDataConsumer {
   public function consume(string $Directory, array $aData);
 }
 
-interface IDuplicatePhotoResolver {
-  public function resolve($oExisting, $sEPath, $oCurrent, $oCPath);
-}

@@ -1,4 +1,7 @@
 <?php
+/**
+ * @package PhotoSort
+ */
 
 namespace PhotoSort\Archive;
 
