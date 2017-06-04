@@ -2,83 +2,142 @@
 
 namespace PhotoSort\Utility;
 
+/**
+ * CLIScript
+ *
+ */
 abstract class CLIScript {
   const
-    ARGTYPE_SWITCH  = 0,
-    ARGTYPE_STRING  = 1,
-    ARGTYPE_INTEGER = 2,
+    /**
+     * Parameter types.
+     */
+    PARAM_TYPE_SWITCH     = 0,
+    PARAM_TYPE_STRING     = 1,
+    PARAM_TYPE_INTEGER    = 2,
+    PARAM_TYPE_FLOAT      = 3,
 
-    ARG_OPTIONAL       = 0,
-    ARG_VALUE_OPTIONAL = 0,
-    ARG_REQUIRED       = 1,
-    ARG_VALUE_REQUIRED = 2
+    /**
+     * Parameter requirements.
+     */
+    PARAM_OPTIONAL       = 0,
+    PARAM_VALUE_OPTIONAL = 0,
+    PARAM_REQUIRED       = 1,
+    PARAM_VALUE_REQUIRED = 2
   ;
 
   public abstract function main();
 
-  protected function expectArg($sArgName, $eArgType, $eReqirement) {
-    if (!isset(self::$aAllowed[$eArgType])) {
+  /**
+   * Set the expectation for an argument.
+   *
+   * @param string $sParamName
+   * @param enum   $eParamType
+   * @param enum   $eParamReqt
+   */
+  protected function expectParam(string $sParamName, $eParamType, $eParamReqt) {
+    if (!isset(self::$aAllowedTypes[$eParamType])) {
       throw new \InvalidArgumentException();
     }
-    $this->aExpect[$sArgName] = (object)[
-      'eArgType'    => $eArgType,
-      'eReqirement' => $eReqirement
+    $this->aExpectParams[$sParamName] = (object)[
+      'eParamType'    => $eParamType,
+      'eParamReqt' => $eParamReqt
     ];
   }
 
-  protected function getArgs() {
-    $aResult = [];
-    if (count($this->aExpect)>0) {
-      $aResult   = $this->parseGetOpts(getopt('', $this->buildGetOpts()));
+  /**
+   * Validate and return the provided arguments.
+   *
+   * @return object[]
+   */
+  protected function getParams() {
+    if (count($this->aExpectParams)>0) {
+      return $this->parseGetOpts(getopt('', $this->buildGetOpts()));
     }
-    return $aResult;
+    return [];
   }
 
+  /**
+   * Prepare the getopt() long options input array.
+   *
+   * @return string[]
+   */
   private function buildGetOpts() {
     $aOptions = [];
-    foreach ($this->aExpect as $sArgName => $oArgInfo) {
-      $sOptFormat  = $sArgName;
-      if ($oArgInfo->eArgType != self::ARGTYPE_SWITCH) {
-        $sOptFormat .= ($oArgInfo->eReqirement & self::ARG_VALUE_REQUIRED ? ':' : '::');
+    foreach ($this->aExpectParams as $sParamName => $oParamInfo) {
+      $sOptFormat  = $sParamName;
+      if ($oParamInfo->eParamType != self::PARAM_TYPE_SWITCH) {
+        $sOptFormat .= ($oParamInfo->eParamReqt & self::PARAM_VALUE_REQUIRED ? ':' : '::');
       }
       $aOptions[] = $sOptFormat;
     }
     return $aOptions;
   }
 
+  /**
+   * Validate the getopt() array return.
+   *
+   * @param string[] $aReceived
+   * @return object[]
+   */
   private function parseGetOpts(array $aReceived) {
     $aRsult = [];
-    foreach ($this->aExpect as $sArgName => $oArgInfo) {
-      $oArgState = (object)[
-        'bArgProvided' => isset($aReceived[$sArgName])
+    foreach ($this->aExpectParams as $sParamName => $oParamInfo) {
+      $oParamState = (object)[
+        'bParamProvided' => isset($aReceived[$sParamName])
       ];
-      if ($oArgInfo->eArgType != self::ARGTYPE_SWITCH) {
+      if ($oParamInfo->eParamType != self::PARAM_TYPE_SWITCH) {
         if (
-          $oArgInfo->eReqirement & self::ARG_REQUIRED &&
-          false == $oArgState->bArgProvided
+          $oParamInfo->eParamReqt & self::PARAM_REQUIRED &&
+          false == $oParamState->bParamProvided
         ) {
-          throw new \Exception('Missing required ' . $sArgName);
+          throw new \Exception('Missing required paramter ' . $sParamName);
         }
-        if ($oArgState->bArgProvided) {
-          if ($oArgInfo->eReqirement & self::ARG_VALUE_REQUIRED) {
-            $oArgState->mValue = $aReceived[$sArgName];
+        if ($oParamState->bParamProvided) {
+          if ($oParamInfo->eParamReqt & self::PARAM_VALUE_REQUIRED) {
+            $oParamState->mValue = $this->validateParamType($sParamName, $aReceived[$sParamName], $oParamInfo->eParamType);
           }
           else {
-            if (false !== $aReceived[$sArgName]) {
-              $oArgState->mValue = $aReceived[$sArgName];
+            if (false !== $aReceived[$sParamName]) {
+              $oParamState->mValue =  $this->validateParamType($sParamName, $aReceived[$sParamName], $oParamInfo->eParamType);
             }
           }
         }
       }
-      $aResult[$sArgName] = $oArgState;
+      $aResult[$sParamName] = $oParamState;
     }
     return $aResult;
   }
 
-  private $aExpect = [];
-  private static $aAllowed = [
-    self::ARGTYPE_SWITCH  => 'switch',
-    self::ARGTYPE_STRING  => 'string',
-    self::ARGTYPE_INTEGER => 'integer'
+  /**
+   * Validate the type of a given parameter.
+   *
+   * @param string $sParamNname
+   * @param string $sValue
+   * @param enum   $eParamType
+   * @return mixed
+   */
+  private function validateParamType(string $sParamNname, $sValue, $eParamType) {
+    switch ($eParamType) {
+      case self::PARAM_TYPE_INTEGER:
+        if (!is_numeric($sValue)) {
+          throw new \Exception('Value for ' . $sParamNname . ' must be ' . self::$aAllowedTypes[$eParamType]);
+        }
+        return (int)$sValue;
+      case self::PARAM_TYPE_FLOAT:
+        if (!is_numeric($sValue)) {
+          throw new \Exception('Value for ' . $sParamNname . ' must be ' . self::$aAllowedTypes[$eParamType]);
+        }
+        return (float)$sValue;
+      default:
+        return $sValue;
+    }
+  }
+
+  private $aExpectParams        = [];
+  private static $aAllowedTypes = [
+    self::PARAM_TYPE_SWITCH  => 'a switch',
+    self::PARAM_TYPE_STRING  => 'a string',
+    self::PARAM_TYPE_INTEGER => 'an integer',
+    self::PARAM_TYPE_FLOAT   => 'a decimal'
   ];
 }

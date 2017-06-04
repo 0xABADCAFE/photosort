@@ -18,13 +18,14 @@ require_once 'src/utility/CLIScript.php';
 class TestScript extends \PhotoSort\Utility\CLIScript {
 
   public function __construct() {
-    $this->expectArg('reqint', self::ARGTYPE_INTEGER, self::ARG_REQUIRED|self::ARG_VALUE_REQUIRED);
-    $this->expectArg('optstr', self::ARGTYPE_STRING, self::ARG_OPTIONAL|self::ARG_VALUE_OPTIONAL);
-    $this->expectArg('switch', self::ARGTYPE_SWITCH, self::ARG_OPTIONAL);
+    $this->expectParam('reqint', self::PARAM_TYPE_INTEGER, self::PARAM_REQUIRED|self::PARAM_VALUE_REQUIRED);
+    $this->expectParam('optstr', self::PARAM_TYPE_STRING,  self::PARAM_OPTIONAL|self::PARAM_VALUE_OPTIONAL);
+    $this->expectParam('optflt', self::PARAM_TYPE_FLOAT,   self::PARAM_OPTIONAL|self::PARAM_VALUE_REQUIRED);
+    $this->expectParam('switch', self::PARAM_TYPE_SWITCH,  self::PARAM_OPTIONAL);
   }
 
   public function main() {
-    print_r($this->getArgs());
+    var_dump($this->getParams());
   }
 }
 
